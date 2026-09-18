@@ -16,7 +16,7 @@ Pi / OMP / other clients
 
 Current build target:
 
-* Bifrost `v2.2.0` dynamic image revision `v2.2.0-r1`
+* Bifrost `v2.2.0` dynamic image revision `v2.2.0-r2`
 * Bifrost core `v1.9.0`
 * Go `1.27.0`
 * Linux `amd64` / Alpine `musl`
@@ -24,13 +24,13 @@ Current build target:
 The supported runtime image is:
 
 ```text
-ghcr.io/fipnooone/bifrost-dynamic:v2.2.0-r1
+ghcr.io/fipnooone/bifrost-dynamic:v2.2.0-r2
 ```
 
 For reproducible deployment, pin the published digest:
 
 ```text
-ghcr.io/fipnooone/bifrost-dynamic@sha256:482d7897084eb9a7e2f0f7cc105e605013dde2929598897646afb5df54dbc754
+ghcr.io/fipnooone/bifrost-dynamic@sha256:fcb030364de15a10c916292ba85c2a0c885ced9d35aa77b7c390ed09c993e214
 ```
 
 The official `maximhq/bifrost` image is statically linked and is not a supported
