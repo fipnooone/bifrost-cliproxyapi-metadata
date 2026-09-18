@@ -16,14 +16,29 @@ Pi / OMP / other clients
 
 Current build target:
 
-* Bifrost `v2.2.0`
+* Bifrost `v2.2.0` dynamic image revision `v2.2.0-r1`
 * Bifrost core `v1.9.0`
 * Go `1.27.0`
-* Linux `amd64`
+* Linux `amd64` / Alpine `musl`
+
+The supported runtime image is:
+
+```text
+ghcr.io/fipnooone/bifrost-dynamic:v2.2.0-r1
+```
+
+For reproducible deployment, pin the published digest:
+
+```text
+ghcr.io/fipnooone/bifrost-dynamic@sha256:482d7897084eb9a7e2f0f7cc105e605013dde2929598897646afb5df54dbc754
+```
+
+The official `maximhq/bifrost` image is statically linked and is not a supported
+runtime for this native Go plugin. The dynamic image is an unofficial Bifrost
+build that preserves the pinned Bifrost source and toolchain while enabling
+native plugin loading.
 
 Go plugins must be built against a compatible Bifrost/Go toolchain. Do not assume a `.so` built for one Bifrost release will work with another.
-
-> **Status:** the plugin source and CI/release flow are ready, but loading it into the stock Bifrost `v2.2.0` container still needs real-world validation. The upstream Dockerfile currently builds Bifrost statically, which may prevent native Go `.so` plugins from loading.
 
 ## Configuration
 

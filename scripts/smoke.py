@@ -186,7 +186,7 @@ def main() -> None:
     url = os.environ.get("PLUGIN_URL")
     if url and not url.startswith("https://"):
         raise RuntimeError("PLUGIN_URL must be a public immutable HTTPS release-asset URL")
-    image = f"{TARGET['BIFROST_IMAGE_REPO']}:{TARGET['BIFROST_VERSION']}"
+    image = f"{TARGET['BIFROST_IMAGE_REPO']}@{TARGET['BIFROST_IMAGE_DIGEST']}"
     run("docker", "pull", "--platform", "linux/amd64", image)
     inspection = json.loads(run("docker", "image", "inspect", image, capture=True))[0]
     image_id = inspection["Id"]  # Freeze the pulled image for this entire validation run.

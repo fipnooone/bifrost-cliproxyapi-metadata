@@ -9,7 +9,11 @@ source "$ROOT/target.env"
 set +a
 export GOWORK=off GOTOOLCHAIN=local GOEXPERIMENT=
 export GOFLAGS="-modfile=$ROOT/.build/host.mod -mod=readonly -trimpath -tags=$BUILD_TAGS"
-BIFROST_IMAGE="${BIFROST_IMAGE_REPO}:${BIFROST_VERSION}"
+if [[ -n "${BIFROST_IMAGE_DIGEST:-}" ]]; then
+  BIFROST_IMAGE="${BIFROST_IMAGE_REPO}@${BIFROST_IMAGE_DIGEST}"
+else
+  BIFROST_IMAGE="${BIFROST_IMAGE_REPO}:${BIFROST_IMAGE_TAG}"
+fi
 export BIFROST_IMAGE
 fail() { printf '%s\n' "$*" >&2; exit 1; }
 check_go() {
