@@ -1,0 +1,59 @@
+name: Release
+on:
+  push:
+    tags: ['v*']
+permissions:
+  contents: write
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  release:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    env:
+      VERSION: ${{ github.ref_name }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Validate immutable version tag
+        shell: bash
+        run: |
+          [[ "$VERSION" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo 'Expected vMAJOR.MINOR.PATCH'; exit 1; }
+          test "$(git rev-parse HEAD)" = "$(git rev-parse "refs/tags/$VERSION^{commit}")"
+      - uses: actions/cache@v4
+        with:
+          path: |
+            .build/gomod
+            .build/gocache
+            .build/upstream
+          key: linux-amd64-go-${{ hashFiles('target.env') }}-${{ hashFiles('**/*.go') }}
+          restore-keys: |
+            linux-amd64-go-${{ hashFiles('target.env') }}-
+      - name: Exact compiler — unit tests, race tests, native build
+        run: ./scripts/container.sh make native-test native-test-race native-build
+      - name: Rebuild and verify deterministic output within this builder
+        shell: bash
+        run: |
+          cp dist/bifrost-cliproxyapi-metadata.so .build/first.so
+          ./scripts/container.sh make native-build
+          cmp .build/first.so dist/bifrost-cliproxyapi-metadata.so
+      - name: Mandatory actual-image load and catalog/fallback verification
+        run: make host-smoke
+      - name: Checksums, immutable release assets, public HTTPS load, stable promotion
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: ./scripts/publish.sh "$VERSION"
+      - name: Preserve failure diagnostics, never bypass a failed compatibility gate
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-diagnostics
+          path: |
+            dist/*.txt
+            dist/*.log
+            dist/*smoke.json
+          if-no-files-found: ignore
+          retention-days: 7

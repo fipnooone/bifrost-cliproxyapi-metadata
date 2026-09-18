@@ -1,0 +1,45 @@
+name: CI
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Cache pinned Go modules and build results
+        uses: actions/cache@v4
+        with:
+          path: |
+            .build/gomod
+            .build/gocache
+            .build/upstream
+          key: linux-amd64-go-${{ hashFiles('target.env') }}-${{ hashFiles('**/*.go') }}
+          restore-keys: |
+            linux-amd64-go-${{ hashFiles('target.env') }}-
+      - name: Unit tests, race tests and native shared-object build
+        # This installs/uses the exact Go toolchain via the digest-pinned official
+        # compiler image. No setup-go default or host GCC/libc leaks into the build.
+        run: ./scripts/container.sh make native-test native-test-race native-build
+      - name: Actual unmodified Bifrost image and native /v1/models
+        run: make host-smoke
+      - name: Preserve diagnostic logs on failure (not unvalidated binaries)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: compatibility-diagnostics
+          path: |
+            dist/*.txt
+            dist/*.log
+            dist/host-smoke.json
+          if-no-files-found: ignore
+          retention-days: 7

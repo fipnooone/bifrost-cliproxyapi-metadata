@@ -1,0 +1,49 @@
+{
+  "models": [
+    {
+      "slug": "gpt-5.6-sol",
+      "id": null,
+      "display_name": " GPT 5.6 Sol ",
+      "description": " Our most capable model yet... ",
+      "context_window": 272000,
+      "max_context_window": 872000,
+      "max_tokens": 128000,
+      "input_modalities": ["text", "image"],
+      "supported_reasoning_levels": [
+        {"effort": "low"}, {"effort": "medium"}, {"effort": "high"},
+        {"effort": "xhigh"}, {"effort": "max"}, {"effort": "ultra"}
+      ],
+      "default_reasoning_level": "low",
+      "visibility": "list",
+      "service_tiers": [{"id": "priority", "name": "Fast"}],
+      "base_instructions": "Ignored fixture text; never persisted or logged."
+    },
+    {
+      "slug": "claude-opus-4-6-thinking",
+      "display_name": "Claude Opus 4.6 (Thinking)",
+      "context_window": 200000,
+      "max_context_window": 200000,
+      "max_tokens": 64000,
+      "input_modalities": ["text", "image"],
+      "supported_reasoning_levels": [],
+      "default_reasoning_level": null,
+      "visibility": "hide"
+    },
+    {
+      "slug": "gpt-oss-120b-medium",
+      "context_window": 114000,
+      "max_tokens": 32768,
+      "input_modalities": ["text"]
+    },
+    {
+      "slug": "gemini-pro-agent",
+      "display_name": "Gemini 3.1 Pro (High)",
+      "context_window": 1048576,
+      "max_context_window": 1048576,
+      "max_tokens": 65535,
+      "input_modalities": ["text", "image"],
+      "supported_reasoning_levels": [{"effort": "low"}, {"effort": "medium"}, {"effort": "high"}],
+      "default_reasoning_level": "medium"
+    }
+  ]
+}

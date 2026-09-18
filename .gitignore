@@ -1,0 +1,9 @@
+.build/
+dist/
+.env
+.env.*
+!.env.example
+*.so
+*.test
+coverage.out
+__pycache__/
