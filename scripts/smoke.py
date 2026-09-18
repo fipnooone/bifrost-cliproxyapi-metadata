@@ -203,10 +203,21 @@ def main() -> None:
         with tempfile.TemporaryDirectory(prefix="bifrost-plugin-smoke-") as directory:
             app = Path(directory)
             app.chmod(0o777)  # Only disposable, test-only SQLite/config directory.
-            provider = {"custom_provider_config": {"base_provider_type": "openai", "is_key_less": True},
-                        "network_config": {"base_url": f"http://127.0.0.1:{upstream_port}/v1", "max_retries": 0}}
+            provider = {
+                "custom_provider_config": {
+                    "base_provider_type": "openai",
+                    "is_key_less": True,
+                },
+                "network_config": {
+                    "base_url": f"http://127.0.0.1:{upstream_port}",
+                    "max_retries": 0,
+                },
+            }
+
             other = copy.deepcopy(provider)
-            other["network_config"]["base_url"] = f"http://127.0.0.1:{upstream_port}/other/v1"
+            other["network_config"]["base_url"] = (
+                f"http://127.0.0.1:{upstream_port}/other"
+            )
             config = {"providers": {"cliproxyapi": provider, "other-provider": other}, "plugins": [{
                 "name": "cliproxyapi-model-metadata", "enabled": True,
                 "path": url or "/plugin/metadata.so",
