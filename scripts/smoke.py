@@ -128,9 +128,6 @@ def audit_binary(image_id: str) -> None:
             raise RuntimeError(f"Incompatible {key}: host={host_settings.get(key)}, plugin={plugin_settings.get(key)}")
     if host_settings.get("-race") == "true":
         raise RuntimeError("A race-enabled host is not this release target")
-    revision = host_settings.get("vcs.revision")
-    if revision and revision != TARGET["BIFROST_SOURCE"]:
-        raise RuntimeError("Published host revision differs from the pinned source commit")
     for module in host_modules.keys() & plugin_modules.keys():
         if host_modules[module] != plugin_modules[module]:
             raise RuntimeError(f"Shared module mismatch: {module}")
@@ -179,6 +176,10 @@ def verify_models(response: dict, enriched: bool) -> None:
 
 def main() -> None:
     global MODE
+    # Remove stale success records before any operation that can fail; absence
+    # of a current record is the only valid result for an unsuccessful run.
+    (ROOT / "dist/host-smoke.json").unlink(missing_ok=True)
+    (ROOT / "dist/url-smoke.json").unlink(missing_ok=True)
     if not shutil.which("docker") or not PLUGIN.exists():
         raise RuntimeError("Docker and make build output are required for the real-host smoke test")
     if os.uname().sysname != "Linux":
@@ -186,9 +187,25 @@ def main() -> None:
     url = os.environ.get("PLUGIN_URL")
     if url and not url.startswith("https://"):
         raise RuntimeError("PLUGIN_URL must be a public immutable HTTPS release-asset URL")
-    image = f"{TARGET['BIFROST_IMAGE_REPO']}@{TARGET['BIFROST_IMAGE_DIGEST']}"
-    run("docker", "pull", "--platform", "linux/amd64", image)
+    repo = TARGET["BIFROST_IMAGE_REPO"]
+    digest = TARGET.get("BIFROST_IMAGE_DIGEST", "")
+    tag = TARGET.get("BIFROST_IMAGE_TAG", "")
+    if digest:
+        image = f"{repo}@{digest}"
+    elif tag:
+        image = f"{repo}:{tag}"
+    else:
+        raise RuntimeError("No matching Bifrost runtime image is configured; refusing runtime validation")
+    # Fail closed rather than treating source compatibility as proof of runtime ABI.
+    pull = subprocess.run(["docker", "pull", "--platform", "linux/amd64", image],
+                          cwd=ROOT, text=True, capture_output=True, check=False)
+    if pull.returncode:
+        raise RuntimeError(f"Matching Bifrost runtime image unavailable ({image}); smoke test not passed: {pull.stderr.strip()}")
     inspection = json.loads(run("docker", "image", "inspect", image, capture=True))[0]
+    labels = inspection.get("Config", {}).get("Labels") or {}
+    revision = labels.get("io.bifrost-dynamic.upstream-revision")
+    if revision != TARGET["BIFROST_SOURCE"]:
+        raise RuntimeError("Image upstream revision label does not match pinned BIFROST_SOURCE")
     image_id = inspection["Id"]  # Freeze the pulled image for this entire validation run.
     audit_binary(image_id)
     upstream = http.server.ThreadingHTTPServer(("127.0.0.1", 0), Upstream)
