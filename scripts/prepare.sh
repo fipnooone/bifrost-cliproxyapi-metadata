@@ -20,7 +20,11 @@ fetch_verified go.sum "$HOST_SUM_BLOB"
 ! grep -Eq '^[[:space:]]*replace([[:space:]]|$)' .build/upstream/go.mod || fail "Upstream added replace directives; re-audit before building."
 # Keep EVERY host requirement, including indirect requirements. MVS can select
 # different common-package versions when only core is pinned. No go mod tidy.
-sed 's|^module github.com/maximhq/bifrost/transports$|module bifrost-cliproxyapi-metadata|' .build/upstream/go.mod > .build/host.mod.new
+sed 's|^module github.com/maximhq/bifrost/transports/v2$|module bifrost-cliproxyapi-metadata|' .build/upstream/go.mod > .build/host.mod.new
+if [[ $(head -n 1 .build/host.mod.new) != 'module bifrost-cliproxyapi-metadata' ]]; then
+ rm -f .build/host.mod.new
+ fail "Unexpected upstream module identity; re-audit before building."
+fi
 mv .build/host.mod.new .build/host.mod
 cp .build/upstream/go.sum .build/host.sum
 # Check the small editor/module facade, or regenerate it during a deliberate upgrade.
