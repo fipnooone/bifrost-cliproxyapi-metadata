@@ -14,18 +14,15 @@ Pi / OMP / other clients
 
 ## Compatibility
 
-Current source/build compatibility target:
+Current compatibility target:
 
 * Bifrost `v2.3.2` (commit `a05ea20e68bf116a35e9f05b1a3d749624b3935e`)
 * Bifrost core `v1.13.1`
 * Go `1.27.3`
 * Linux `amd64` / Alpine `musl`
+* Runtime image `ghcr.io/fipnooone/bifrost-dynamic:v2.3.2-r1` (digest `sha256:f72568d50ececefbd445c966c4fa90e37583aa5f67762c9fa1aee488512bf221`)
 
-**Runtime validation is currently unavailable:** the matching dynamic image
-`ghcr.io/fipnooone/bifrost-dynamic:v2.3.2` has not been published. Do not use an
-older image/digest as evidence of v2.3.2 compatibility. Release/runtime
-validation must fail closed until a matching image (or locally built host from
-the exact pinned source/toolchain) is available.
+The pinned image passed `make validate`, including native plugin loading, catalog enrichment, and cache/fail-open checks against `/v1/models`.
 
 The official `maximhq/bifrost` image is statically linked and is not a supported
 runtime for this native Go plugin. The dynamic image is an unofficial Bifrost
@@ -63,7 +60,7 @@ and enriches matching models returned by Bifrost's normal `/v1/models` flow.
 
 ## Bifrost setup
 
-Use an immutable GitHub Release URL for the plugin. The v2.3.2 filename below is illustrative and unreleased; no matching runtime image is currently available:
+Use an immutable GitHub Release URL for the plugin. The v2.3.2 filename below is illustrative until the plugin release is published:
 
 ```json
 {

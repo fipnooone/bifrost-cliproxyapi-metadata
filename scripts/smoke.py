@@ -235,7 +235,8 @@ def main() -> None:
             other["network_config"]["base_url"] = (
                 f"http://127.0.0.1:{upstream_port}/other"
             )
-            config = {"providers": {"cliproxyapi": provider, "other-provider": other}, "plugins": [{
+            config = {"client": {"enforce_auth_on_inference": False},
+                      "providers": {"cliproxyapi": provider, "other-provider": other}, "plugins": [{
                 "name": "cliproxyapi-model-metadata", "enabled": True,
                 "path": url or "/plugin/metadata.so",
                 "config": {"base_url": f"http://127.0.0.1:{upstream_port}", "timeout_ms": 1000}}]}
